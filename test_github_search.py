@@ -10,8 +10,6 @@ logging.disable(logging.CRITICAL)
 
 TEST_REPOS = [
     "repo_1",
-    "repo_2",
-    "repo_3",
 ]
 
 class GithubSearchTest(TestCase):
@@ -23,7 +21,7 @@ class GithubSearchTest(TestCase):
             try:
                 self.user.create_repo(name=repo_name, auto_init=True)
             except GithubException:
-                pass
+                print('Creation failed')
         repo  = self.user.get_repo("repo_1")
         content = 'a==1234\nb>2234,<=2235\nc>3234\n- def.txt\n\n#'
         message = 'corn 2'
@@ -49,7 +47,7 @@ class GithubSearchTest(TestCase):
     def test_get_requirements_gets_requirements_string(self):
         result = []
         repo = self.user.get_repo("repo_1")
-        branch = repo.get_branch(branch='master')
-        result = get_requirements(repo, branch)
+        result = get_requirements(repo)
         expected = [['repo_1', 'master', 'a==1234', 'b>2234,<=2235', 'c>3234']]
         self.assertCountEqual(result, expected)
+        self.fail('x')
