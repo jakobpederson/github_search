@@ -26,13 +26,12 @@ class GithubSearchTest(TestCase):
                 pass
         repo  = self.user.get_repo("repo_1")
         content = 'a==1234\nb>2234,<=2235\nc>3234\n- def.txt\n\n#'
-        message = 'corn'
+        message = 'corn 2'
         path = "/requirements/text.txt"
         repo.create_file(
            path=path,
            message=message,
            content=content,
-           branch='master'
         )
 
     def create_branch(self, repo):
@@ -45,12 +44,12 @@ class GithubSearchTest(TestCase):
             try:
                 self.user.get_repo(repo_name).delete()
             except GithubException:
-                pass
+                print('failed to delete {}'.format(repo_name))
 
-    def test_x(self):
+    def test_get_requirements_gets_requirements_string(self):
         result = []
         repo = self.user.get_repo("repo_1")
-        result = get_requirements(self.user, repo)
+        branch = repo.get_branch(branch='master')
+        result = get_requirements(repo, branch)
         expected = [['repo_1', 'master', 'a==1234', 'b>2234,<=2235', 'c>3234']]
         self.assertCountEqual(result, expected)
-        self.fail('x')
