@@ -1,6 +1,6 @@
 from github import Github, GithubException
-from multiprocessing import Pool
 from argparse import ArgumentParser
+import ttd
 
 
 def get_requirements(repo):
@@ -38,6 +38,6 @@ if __name__ == "__main__":
     g = Github(args.token)
     repos = g.get_user().get_repos()
     result = []
-    p = Pool(3)
-    result = p.map(get_requirements, repos)
+    for repo in ttd.ttd(list(repos)):
+        result.append(get_requirements(repo))
     print(result)
