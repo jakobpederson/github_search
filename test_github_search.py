@@ -48,9 +48,9 @@ class GithubSearchTest(TestCase):
         repo = self.user.get_repo("repo_1")
         result = get_requirements(repo)
         expected = [
-            ['repo_1', 'master', 'a==1234'],
-            ['repo_1', 'master', 'b>2234,<=2235'],
-            ['repo_1', 'master', 'c>3234'],
+            ['repo_1', 'master', 'a', '==1234'],
+            ['repo_1', 'master', 'b', '>2234', '<=2235'],
+            ['repo_1', 'master', 'c', '>3234'],
         ]
         self.assertCountEqual(result, expected)
 
