@@ -47,7 +47,11 @@ class GithubSearchTest(TestCase):
         result = []
         repo = self.user.get_repo("repo_1")
         result = get_requirements(repo)
-        expected = [['repo_1', 'master', 'a==1234', 'b>2234,<=2235', 'c>3234']]
+        expected = [
+            ['repo_1', 'master', 'a==1234'],
+            ['repo_1', 'master', 'b>2234,<=2235'],
+            ['repo_1', 'master', 'c>3234'],
+        ]
         self.assertCountEqual(result, expected)
 
     def test_write_to_file(self):

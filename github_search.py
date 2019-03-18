@@ -31,7 +31,7 @@ def get_file_contents(repo, file_path, branch_name):
 def filter_file_contents(file_data, repo_name, branch_name):
     result = []
     for lst in file_data:
-        reqs = [repo_name, branch_name] + [val for val in lst if val and val[0] != '-' and val[0] != '#']
+        reqs = [[repo_name, branch_name] + [val] for val in lst if val and val[0] != '-' and val[0] != '#']
         result.extend(reqs)
     return result
 
