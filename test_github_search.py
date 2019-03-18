@@ -3,7 +3,7 @@ from github import Github, GithubException
 import logging
 
 import settings
-from github_search import get_requirements
+from github_search import get_requirements, write_to_file
 
 logging.disable(logging.CRITICAL)
 
@@ -49,4 +49,11 @@ class GithubSearchTest(TestCase):
         result = get_requirements(repo)
         expected = [['repo_1', 'master', 'a==1234', 'b>2234,<=2235', 'c>3234']]
         self.assertCountEqual(result, expected)
-        self.fail('x')
+
+    def test_write_to_file(self):
+        data = [['a', 'b', 'c'], ['e', 'f', 'g']]
+        write_to_file(data)
+        output = open("output.csv", "r")
+        result = output.read()
+        expected = "a,b,c\ne,f,g\n"
+        self.assertEqual(result, expected)

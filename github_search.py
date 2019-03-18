@@ -36,6 +36,12 @@ def filter_file_contents(file_data, repo_name, branch_name):
     return result
 
 
+def write_to_file(rows):
+    with open("output.csv", "w") as f:
+        writer = csv.writer(f)
+        writer.writerows(rows)
+
+
 if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument("--token", required=True)
@@ -45,10 +51,8 @@ if __name__ == "__main__":
     chunks = [repos[i:i + 25] for i in range(0, len(repos), 25)]
     result = []
     p = Pool(3)
-    for count, repos in enumerate(chunks):
+    for count, repos in enumerate(chunks, 1):
         print('loop {}'.format(count))
         result.extend(p.map(get_requirements, repos))
     rows =[x for x in result if x]
-    with open("output.csv", "w") as f:
-        writer = csv.writer(f)
-        writer.writerow(rows)
+    write_to_file(rows)
