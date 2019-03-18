@@ -3,6 +3,7 @@ from argparse import ArgumentParser
 import ttd
 import settings
 from multiprocessing import Pool
+import csv
 
 
 def get_requirements(repo):
@@ -41,10 +42,13 @@ if __name__ == "__main__":
     args = parser.parse_args()
     g = Github(args.token)
     repos = list(g.get_user().get_repos())
-    x = [repos[i:i + 25] for i in range(0, len(repos), 25)]
+    chunks = [repos[i:i + 25] for i in range(0, len(repos), 25)]
     result = []
     p = Pool(3)
-    for ii in x:
-        print('here {}'.format(ii[0]))
-        result.extend(p.map(get_requirements, ii))
-    print([x for x in result if x])
+    for count, repos in enumerate(chunks):
+        print('loop {}'.format(count))
+        result.extend(p.map(get_requirements, repos))
+    rows =[x for x in result if x]
+    with open("output.csv", "w") as f:
+        writer = csv.writer(f)
+        writer.writerow(rows)
