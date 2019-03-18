@@ -1,23 +1,27 @@
 from github import Github, GithubException
 from argparse import ArgumentParser
 import ttd
+import settings
+from multiprocessing import Pool
 
 
 def get_requirements(repo):
     file_contents = []
-    for branch in repo.get_branches():
+    result = []
+    for branch in [branch for branch in repo.get_branches() if branch.name.lower() in ['production', 'master']]:
         file_content = get_file_contents(repo, 'requirements', branch.name)
         file_contents.extend(file_content if file_content else [])
-    try:
-        file_data = [content.decoded_content.decode("utf-8").split('\n') for content in file_contents]
-    except AttributeError as e:
-        pass
-    return filter_file_contents(file_data, repo.name, branch.name)
+        file_data = [decode(content) for content in file_contents]
+        result.extend(filter_file_contents(file_data, repo.name, branch.name))
+    return result
+
+
+def decode(content):
+    return content.decoded_content.decode("utf-8").split('\n')
 
 
 def get_file_contents(repo, file_path, branch_name):
     try:
-        print(repo.name)
         return repo.get_dir_contents(file_path, branch_name)
     except GithubException as e:
         pass
@@ -27,7 +31,7 @@ def filter_file_contents(file_data, repo_name, branch_name):
     result = []
     for lst in file_data:
         reqs = [repo_name, branch_name] + [val for val in lst if val and val[0] != '-' and val[0] != '#']
-        result.append(reqs)
+        result.extend(reqs)
     return result
 
 
@@ -36,8 +40,11 @@ if __name__ == "__main__":
     parser.add_argument("--token", required=True)
     args = parser.parse_args()
     g = Github(args.token)
-    repos = g.get_user().get_repos()
+    repos = list(g.get_user().get_repos())
+    x = [repos[i:i + 25] for i in range(0, len(repos), 25)]
     result = []
-    for repo in ttd.ttd(list(repos)):
-        result.append(get_requirements(repo))
-    print(result)
+    p = Pool(3)
+    for ii in x:
+        print('here {}'.format(ii[0]))
+        result.extend(p.map(get_requirements, ii))
+    print([x for x in result if x])

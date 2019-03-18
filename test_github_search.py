@@ -36,7 +36,6 @@ class GithubSearchTest(TestCase):
         sha = repo.get_git_ref('heads/master').object.sha
         return repo.create_git_ref('refs/heads/{}'.format('branch_1'), sha)
 
-
     def tearDown(self):
         for repo_name in TEST_REPOS:
             try:
