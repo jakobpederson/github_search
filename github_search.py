@@ -58,8 +58,6 @@ if __name__ == "__main__":
     p = Pool(3)
     for count, repos in enumerate(chunks[:1], 1):
         print('loop {}'.format(count))
-        x = p.map(get_requirements, repos)
-        result.extend(x)
-    pre_rows =[x for x in result if x]
-    rows = list(chain.from_iterable(pre_rows))
+        result.extend(p.map(get_requirements, repos))
+    rows = list(chain.from_iterable([x for x in result if x]))
     write_to_file(rows)
