@@ -56,7 +56,7 @@ if __name__ == "__main__":
     chunks = [repos[i:i + 25] for i in range(0, len(repos), 25)]
     result = []
     p = Pool(3)
-    for count, repos in enumerate(chunks[:1], 1):
+    for count, repos in enumerate(chunks, 1):
         print('loop {}'.format(count))
         result.extend(p.map(get_requirements, repos))
     rows = list(chain.from_iterable([x for x in result if x]))
