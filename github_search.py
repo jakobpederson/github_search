@@ -1,10 +1,10 @@
 from github import Github, GithubException
 from argparse import ArgumentParser
-import ttd
 import re
 import settings
 from multiprocessing import Pool
 import csv
+from itertools import chain
 
 
 def get_requirements(repo):
@@ -32,13 +32,13 @@ def get_file_contents(repo, file_path, branch_name):
 def filter_file_contents(file_data, repo_name, branch_name):
     result = []
     for lst in file_data:
-        reqs = [[repo_name, branch_name] + [val] for val in lst if val and val[0] != '-' and val[0] != '#']
+        reqs = split_versions(repo_name, branch_name, lst)
         result.extend(reqs)
-    for val in result:
-        new_list = re.sub(r'(?<!,)([=<>])', r',\1', val[2], count=1)
-        val.pop(2)
-        val.extend(new_list.split(','))
     return result
+
+
+def split_versions(repo_name, branch_name, lst):
+    return [[repo_name, branch_name] + re.sub(r'(?<!,)([=<>])', r',\1', val, count=1).split(',') for val in lst if val and val[0] != '-' and val[0] != '#']
 
 
 def write_to_file(rows):
@@ -56,7 +56,10 @@ if __name__ == "__main__":
     chunks = [repos[i:i + 25] for i in range(0, len(repos), 25)]
     result = []
     p = Pool(3)
-    for count, repos in ttd(enumerate(chunks, 1)):
-        result.extend(p.map(get_requirements, repos))
-    rows =[x for x in result if x]
+    for count, repos in enumerate(chunks[:1], 1):
+        print('loop {}'.format(count))
+        x = p.map(get_requirements, repos)
+        result.extend(x)
+    pre_rows =[x for x in result if x]
+    rows = list(chain.from_iterable(pre_rows))
     write_to_file(rows)
