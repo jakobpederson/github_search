@@ -3,7 +3,7 @@ from github import Github, GithubException
 import logging
 
 import settings
-from github_search import get_requirements, write_to_file, create_json
+from github_search import get_requirements, write_to_file, create_json, process_repo_data
 
 logging.disable(logging.CRITICAL)
 
@@ -66,6 +66,13 @@ class GithubSearchTest(TestCase):
         result = create_json(response)
         expected = {'repo_1': {'master': {'a': ['==1234'], 'b': ['>2234', '<=2235'], 'c': ['>3234']}}}
         self.assertCountEqual(result, expected)
+
+    def test_process_repo_data(self):
+        result = []
+        repo = self.user.get_repo("repo_1")
+        rows, data = process_repo_data([repo])
+        self.assertCountEqual(rows, [['repo_1', 'master', 'a', '==1234'], ['repo_1', 'master', 'b', '>2234', '<=2235'], ['repo_1', 'master', 'c', '>3234']])
+        self.assertEqual(data, {'repo_1': {'master': {'a': ['==1234'], 'b': ['>2234', '<=2235'], 'c': ['>3234']}}})
 
     def test_write_to_file(self):
         data = [['a', 'b', 'c'], ['e', 'f', 'g']]

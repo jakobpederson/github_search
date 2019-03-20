@@ -55,20 +55,25 @@ def write_to_file(rows):
         writer.writerows(rows)
 
 
+def process_repo_data(repos):
+    result = []
+    chunks = [repos[i:i + 20] for i in range(0, len(repos), 20)]
+    p = Pool(5)
+    for count, repos in enumerate(chunks, 1):
+        print('loop {}'.format(count))
+        result.extend(p.map(get_requirements, repos))
+    rows = list(chain.from_iterable([x for x in result if x]))
+    data = create_json(rows)
+    return rows, data
+
+
 if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument("--token", required=True)
     args = parser.parse_args()
     g = Github(args.token)
     repos = list(g.get_user().get_repos())
-    chunks = [repos[i:i + 20] for i in range(0, len(repos), 20)]
-    result = []
-    p = Pool(5)
-    for count, repos in enumerate(chunks, 1):
-        print('loop {}'.format(count))
-        result.extend(p.map(get_requirements, repos))
-    rows = list(chain.from_iterable([x for x in result if x]))
-    json_data = create_json(rows)
-    write_to_file(rows)
+    rows, data = process_repo_data(repos)
     with open('delete.txt', 'w') as f:
         f.write(json.dumps(json_data))
+    print(json.dumps(data))
