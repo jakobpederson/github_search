@@ -1,12 +1,11 @@
-from github import Github, GithubException
-import simplejson as json
-from collections import defaultdict
 from argparse import ArgumentParser
-import re
-import settings
-from multiprocessing import Pool
+from collections import defaultdict
 import csv
+from github import Github, GithubException
 from itertools import chain
+from multiprocessing import Pool
+import simplejson as json
+import re
 
 
 def get_requirements(repo):
@@ -22,10 +21,7 @@ def get_requirements(repo):
 def create_json(lst):
     response = defaultdict(lambda: defaultdict(dict))
     for val in lst:
-        try:
-            response[val[0]][val[1]][val[2]] = val[3:]
-        except KeyError:
-            print(val[2])
+        response[val[0]][val[1]][val[2]] = val[3:]
     return response
 
 def decode(content):
@@ -63,14 +59,14 @@ if __name__ == "__main__":
     args = parser.parse_args()
     g = Github(args.token)
     repos = list(g.get_user().get_repos())
-    chunks = [repos[i:i + 10] for i in range(0, len(repos), 10)]
+    chunks = [repos[i:i + 20] for i in range(0, len(repos), 20)]
     result = []
-    p = Pool(3)
-    for count, repos in enumerate(chunks[:1], 1):
+    p = Pool(5)
+    for count, repos in enumerate(chunks, 1):
         print('loop {}'.format(count))
         result.extend(p.map(get_requirements, repos))
     rows = list(chain.from_iterable([x for x in result if x]))
     json_data = create_json(rows)
-    from jpprint import jpprint
     write_to_file(rows)
-    jpprint(json.dumps(json_data))
+    with open('delete.txt', 'w') as f:
+        f.write(json.dumps(json_data))
