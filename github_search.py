@@ -18,11 +18,13 @@ def get_requirements(repo):
         result.extend(filter_file_contents(file_data, repo.name, branch.name))
     return result
 
+
 def create_json(lst):
     response = defaultdict(lambda: defaultdict(dict))
     for val in lst:
         response[val[0]][val[1]][val[2]] = val[3:]
     return response
+
 
 def decode(content):
     return content.decoded_content.decode("utf-8").split('\n')
@@ -31,7 +33,7 @@ def decode(content):
 def get_file_contents(repo, file_path, branch_name):
     try:
         return repo.get_dir_contents(file_path, branch_name)
-    except GithubException as e:
+    except GithubException:
         pass
 
 
