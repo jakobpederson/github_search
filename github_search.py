@@ -1,4 +1,6 @@
 from github import Github, GithubException
+import simplejson as json
+from collections import defaultdict
 from argparse import ArgumentParser
 import re
 import settings
@@ -17,6 +19,14 @@ def get_requirements(repo):
         result.extend(filter_file_contents(file_data, repo.name, branch.name))
     return result
 
+def create_json(lst):
+    response = defaultdict(lambda: defaultdict(dict))
+    for val in lst:
+        try:
+            response[val[0]][val[1]][val[2]] = val[3:]
+        except KeyError:
+            print(val[2])
+    return response
 
 def decode(content):
     return content.decoded_content.decode("utf-8").split('\n')
@@ -53,11 +63,14 @@ if __name__ == "__main__":
     args = parser.parse_args()
     g = Github(args.token)
     repos = list(g.get_user().get_repos())
-    chunks = [repos[i:i + 25] for i in range(0, len(repos), 25)]
+    chunks = [repos[i:i + 10] for i in range(0, len(repos), 10)]
     result = []
     p = Pool(3)
-    for count, repos in enumerate(chunks, 1):
+    for count, repos in enumerate(chunks[:1], 1):
         print('loop {}'.format(count))
         result.extend(p.map(get_requirements, repos))
     rows = list(chain.from_iterable([x for x in result if x]))
+    json_data = create_json(rows)
+    from jpprint import jpprint
     write_to_file(rows)
+    jpprint(json.dumps(json_data))

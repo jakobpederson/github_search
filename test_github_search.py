@@ -3,7 +3,7 @@ from github import Github, GithubException
 import logging
 
 import settings
-from github_search import get_requirements, write_to_file
+from github_search import get_requirements, write_to_file, create_json
 
 logging.disable(logging.CRITICAL)
 
@@ -11,6 +11,7 @@ logging.disable(logging.CRITICAL)
 TEST_REPOS = [
     "repo_1",
 ]
+
 
 class GithubSearchTest(TestCase):
 
@@ -22,15 +23,18 @@ class GithubSearchTest(TestCase):
                 self.user.create_repo(name=repo_name, auto_init=True)
             except GithubException:
                 print('Creation failed')
-        repo  = self.user.get_repo("repo_1")
+        repo = self.user.get_repo("repo_1")
         content = 'a==1234\nb>2234,<=2235\nc>3234\n- def.txt\n\n#'
         message = 'corn 2'
         path = "/requirements/text.txt"
-        repo.create_file(
-           path=path,
-           message=message,
-           content=content,
-        )
+        try:
+            repo.create_file(
+                path=path,
+                message=message,
+                content=content,
+            )
+        except GithubException:
+            pass
 
     def create_branch(self, repo):
         sha = repo.get_git_ref('heads/master').object.sha
@@ -52,6 +56,15 @@ class GithubSearchTest(TestCase):
             ['repo_1', 'master', 'b', '>2234', '<=2235'],
             ['repo_1', 'master', 'c', '>3234'],
         ]
+        self.assertCountEqual(result, expected)
+
+    def test_create_json(self):
+        result = []
+        repo = self.user.get_repo("repo_1")
+        response = get_requirements(repo)
+        branch = [x for x in repo.get_branches() if x.name == 'master'][0]
+        result = create_json(response)
+        expected = {'repo_1': {'master': {'a': ['==1234'], 'b': ['>2234', '<=2235'], 'c': ['>3234']}}}
         self.assertCountEqual(result, expected)
 
     def test_write_to_file(self):
